@@ -17,7 +17,7 @@ It checks the resulting code for syntax errors, just to keep things safe...
 You can install it in your `~/bin` directory. Please ensure it's in your `$PATH`.
 
 ```bash
-mkdir -p ~/bin && echo 'export PATH="~/bin:$PATH"' >> ~/.bashrc
+mkdir ~/bin 2>/dev/null && echo 'export PATH="~/bin:$PATH"' >> ~/.bashrc
 ```
 
 Then clone the repository and symlink the script:
@@ -47,7 +47,7 @@ cat [FILE] | php-auto-indent - > [NEWFILE]
 Paste this in your `.vimrc`, and format your code using `CTRL`+`b`
 
 ```vim
-" format PHP code with php-auto-indent
+" format PHP code with php-auto-indent using <c-b>
 func! PHPAutoIndent(mode) range
     :set ff=unix
     if (a:mode == 'visual')
