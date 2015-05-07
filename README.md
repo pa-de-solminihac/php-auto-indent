@@ -2,7 +2,7 @@
 
 **Fail-safe php auto indent**
 
-`php-auto-indent` is a command line tool you can use to format php code using PEAR, PSR-1 and PSR-2 coding standards.
+`php-auto-indent` is a command line tool you can use to format php code using [PEAR](http://pear.php.net/manual/en/standards.php), [PSR-1](http://www.php-fig.org/psr/psr-1/) and [PSR-2](http://www.php-fig.org/psr/psr-2/) coding standards.
 
 It checks the resulting code for syntax errors, just to keep things safe...
 
