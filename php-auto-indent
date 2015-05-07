@@ -1,0 +1,173 @@
+#!/usr/bin/env php
+<?php
+/*configuration*/
+define('PATH_TO_PHP_BEAUTIFIER', 'php_beautifier');
+define('PATH_TO_PHP_CS_FIXER', 'php-cs-fixer');
+define('PATH_TO_PHP', 'php');
+
+/*TODO: supprimer la balise PHP fermante en fin de fichier*/
+/*TODO: mettre les accolades dans les "if then else" qui n'en ont pas*/
+/*TODO: corriger le cas où ça rajoute des espaces après les éléments de tableaux, entre la parenthèse fermante et la virgule*/
+/*TODO: rajouter des espaces lors des transtypages entre la parenthèse fermante et la virgule*/
+/*TODO: corriger l'indentation des switch*/
+/*TODO: rajouter des espaces avant les définitions de fonctions (avant le docblock si présent, ou avant la line "function" sinon*/
+ini_set('error_reporting', 0);
+ini_set('display_errors', 'off');
+ini_set('memory_limit', -1);
+ini_set('max_execution_time', 0);
+
+if (empty($argv[1]) || $argv[1] == '-h' || $argv[1] == '--help') {
+    file_put_contents('php://stderr', '
+Usage: ' . $argv[0] . ' [FILE]
+
+    Options :
+        -h, --help            prints this help
+
+    With no FILE, or when FILE is -, read standard input.
+
+');
+    die();
+}
+
+/*get parameters and content*/
+$options = array();
+$filename = false;
+if ($argv[1] == '-') {
+    $handle = fopen('php://stdin', 'r');
+} elseif (file_exists($argv[1])) {
+    $filename = $argv[1];
+    $handle = fopen($filename, 'r');
+} else {
+    echo "Error: no such file";
+    die();
+}
+
+$buffer = '';
+while (!feof($handle)) {
+    $buffer.= fgets($handle);
+}
+fclose($handle);
+
+/*save buffer to temporary file (wether it comes from stdin or a real file)*/
+$buffer_orig = $buffer;
+while (true) {
+    $tempfile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid() . '.php';
+    if (!file_exists($tempfile)) {
+        break;
+    }
+}
+file_put_contents($tempfile, $buffer);
+
+/*test if file is already broken*/
+$not_broken_before = true;
+$cmd = PATH_TO_PHP . ' -l "' . $tempfile . '" | grep -c "No syntax errors detected in"';
+if (exec($cmd) !== "1") {
+    $not_broken_before = false;
+}
+
+/*empty the lines that should be blank and suppress repeated empty lines*/
+$buffer = preg_replace("/^[      ]*$/m", "", $buffer);
+$buffer = preg_replace("/\n\n\n*/", "\n\n", $buffer);
+
+/*replace the remaining empty lines with a "magic pattern" that will not be munched by php_beautifier*/
+$buffer = preg_replace("/^$/m", "#THIS_IS_AN_EMPTY_LINE", $buffer);
+
+/*save buffer to temporary file and run php_beautifier for the major part...*/
+/*3 passes a required to enforce consistant newlines handling when lacking semicolon at the end of lines*/
+for ($i = 0; $i < 3; $i++) {
+    while (true) {
+        $tempfile_phpBeautifier_src = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid() . '.php';
+        if (!file_exists($tempfile_phpBeautifier_src)) {
+            break;
+        }
+    }
+    file_put_contents($tempfile_phpBeautifier_src, $buffer);
+    while (true) {
+        $tempfile_phpBeautifier_dst = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid() . '.php';
+        if (!file_exists($tempfile_phpBeautifier_dst)) {
+            break;
+        }
+    }
+    $cmd_phpBeautifier = PATH_TO_PHP_BEAUTIFIER . ' --filters "ArrayNested() Lowercase() Pear(newline_class=false,newline_function=false,switch_without_indent=false)" -f "' . $tempfile_phpBeautifier_src . '" -o "' . $tempfile_phpBeautifier_dst . '" 2>/dev/null';
+    if (false !== exec($cmd_phpBeautifier)) {
+        $buffer = file_get_contents($tempfile_phpBeautifier_dst);
+    }
+    unlink($tempfile_phpBeautifier_src);
+    rename($tempfile_phpBeautifier_dst, $tempfile_phpBeautifier_src);
+}
+
+/*replace the "magic pattern" with blank lines*/
+$buffer = preg_replace("/#THIS_IS_AN_EMPTY_LINE/", "\n", $buffer);
+$buffer = preg_replace("/\/\/THIS_IS_AN_EMPTY_LINE/", "\n", $buffer);
+
+/*empty the lines that should be blank and suppress repeated empty lines*/
+$buffer = preg_replace("/^[      ]*$/m", "", $buffer);
+$buffer = preg_replace("/\n\n\n*/", "\n\n", $buffer);
+
+/*php-cs-fixer for the remaining part (adding newlines before returns, better handling of typecasting...)*/
+/*sadly, php-cs-fixer can't get content from stdin, and it also changes non php code*/
+/*hopefully we can work it around !*/
+$buffer = preg_replace_callback('/(<\?.*?\?>)/sm', "phpCsFix", $buffer);
+
+/*we can return broken code only if it already was broken*/
+$not_broken = true;
+if ($not_broken_before) {
+    while (true) {
+        $tempfile_final = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid() . '.php';
+        if (!file_exists($tempfile_final)) {
+            break;
+        }
+    }
+    file_put_contents($tempfile_final, $buffer);
+    $cmd = PATH_TO_PHP . ' -l "' . $tempfile . '" | grep -c "No syntax errors detected in"';
+    if (exec($cmd) === "0") {
+        error_log($argv[0] . " could not beautify this file. Leaving temporary file in " . $tempfile_final);
+        $not_broken = false;
+    } else {
+        unlink($tempfile_final);
+    }
+}
+
+/*it's better to restore original if we broke something*/
+if (!$not_broken) {
+    $buffer = $buffer_orig;
+}
+
+/*save or output changes*/
+if ($filename === false) {
+    echo $buffer;
+} else {
+    file_put_contents($filename, $buffer);
+}
+
+unlink($tempfile);
+
+/**
+ * phpCsFix
+ *
+ * @param mixed $matches
+ * @access public
+ * @return void
+ */
+function phpCsFix($matches)
+{
+    while (true) {
+        $tempfile_phpCsFix = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid() . '.php';
+        if (!file_exists($tempfile_phpCsFix)) {
+            break;
+        }
+    }
+    file_put_contents($tempfile_phpCsFix, $matches[1]);
+    if (false !== exec(PATH_TO_PHP_CS_FIXER . " fix $tempfile_phpCsFix --level=all --fixers=-php_closing_tag --quiet > /dev/null")) {
+        $content_fixed = file_get_contents($tempfile_phpCsFix);
+        // restore closing PHP tag
+        if (mb_substr($content_fixed, -4) == " ?>\n") {
+            $content_fixed = mb_substr($content_fixed, 0, -4) . "\n?>\n";
+        }
+        $content_fixed = rtrim($content_fixed);
+    } else {
+        $content_fixed = $matches[1];
+    }
+    unlink($tempfile_phpCsFix);
+    return $content_fixed;
+}
