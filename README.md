@@ -35,17 +35,17 @@ cat [FILE] | php-auto-indent - > [NEWFILE]
 Paste this in your `.vimrc`, and format your code using `CTRL`+`b`
 
 ```vim
-    " format PHP code with php-auto-indent
-    func! PHPAutoIndent(mode) range
-        :set ff=unix
-        if (a:mode == 'visual')
-            :exe "'<,'>!php-auto-indent -"
-        else
-            :exe "%!php-auto-indent -"
-        endif
-    endfunc
-    noremap <c-b> :call PHPAutoIndent('normal')<CR>
-    vnoremap <c-b> :call PHPAutoIndent('visual')<CR>
+" format PHP code with php-auto-indent
+func! PHPAutoIndent(mode) range
+    :set ff=unix
+    if (a:mode == 'visual')
+        :exe "'<,'>!php-auto-indent -"
+    else
+        :exe "%!php-auto-indent -"
+    endif
+endfunc
+noremap <c-b> :call PHPAutoIndent('normal')<CR>
+vnoremap <c-b> :call PHPAutoIndent('visual')<CR>
 ```
 
 ### Rest of the world
