@@ -47,3 +47,7 @@ Paste this in your `.vimrc`, and format your code using `CTRL`+`b`
     noremap <c-b> :call PHPAutoIndent('normal')<CR>
     vnoremap <c-b> :call PHPAutoIndent('visual')<CR>
 ```
+
+### Rest of the world
+
+Being a command line tool able to work with standard input, `php-auto-indent` should be easy to integrate with your favorite tools.
