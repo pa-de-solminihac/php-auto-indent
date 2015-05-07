@@ -18,7 +18,7 @@ ini_set('max_execution_time', 0);
 
 if (empty($argv[1]) || $argv[1] == '-h' || $argv[1] == '--help') {
     file_put_contents('php://stderr', '
-Usage: ' . $argv[0] . ' [FILE]
+Usage: ' . basename($argv[0]) . ' [FILE]
 
     Options :
         -h, --help            prints this help
