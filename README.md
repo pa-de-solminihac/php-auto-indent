@@ -9,10 +9,8 @@ It checks the resulting code for syntax errors, just to keep things safe...
 ## Requirements
 
 `php-auto-indent` relies on well known tools :
-
-https://github.com/clbustos/PHP_Beautifier
-
-https://github.com/FriendsOfPHP/PHP-CS-Fixer
+- https://github.com/clbustos/PHP_Beautifier
+- https://github.com/FriendsOfPHP/PHP-CS-Fixer
 
 ## Usage
 
