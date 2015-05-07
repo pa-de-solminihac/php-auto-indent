@@ -12,6 +12,20 @@ It checks the resulting code for syntax errors, just to keep things safe...
 - https://github.com/clbustos/PHP_Beautifier
 - https://github.com/FriendsOfPHP/PHP-CS-Fixer
 
+## Install
+
+You can install it in your `~/bin` directory. Please ensure it's in your `$PATH`.
+
+```bash
+mkdir -p ~/bin && echo 'export PATH="~/bin:$PATH"' >> ~/.bashrc
+```
+
+Then clone the repository and symlink the script:
+```bash
+git clone https://github.com/pa-de-solminihac/php-auto-indent ~/bin/php-auto-indent-git && ln -s ~/bin/php-auto-indent-git/php-auto-indent ~/bin/php-auto-indent
+```
+
+
 ## Usage
 
 **Format any PHP file**
