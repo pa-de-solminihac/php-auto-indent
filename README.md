@@ -39,6 +39,11 @@ You can use it with stdin too :
 cat [FILE] | php-auto-indent - > [NEWFILE]
 ```
 
+For recursive use, try :
+```bash
+php-auto-indent -r *
+```
+
 
 ## Goodies
 
