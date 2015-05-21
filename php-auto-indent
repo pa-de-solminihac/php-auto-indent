@@ -37,10 +37,10 @@ if (empty($argv[1]) || $argv[1] == '-h' || $argv[1] == '--help') {
     file_put_contents('php://stderr', '
 Usage: ' . basename($argv[0]) . ' [FILE]
 
-Options :
-    -h, --help            prints this help
-    -r                    recursive use with *
-With no FILE, or when FILE is -, read standard input.
+    Options :
+        -h, --help            prints this help
+        -r                    recursive use with *
+    With no FILE, or when FILE is -, read standard input.
 
 ');
     die();
