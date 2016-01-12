@@ -1,4 +1,4 @@
-#!/usr/bin/env php -n
+#!/usr/bin/env php
 <?php
 /*configuration*/
 define('PATH_TO_PHP_BEAUTIFIER', 'php_beautifier');
@@ -20,7 +20,9 @@ function phpIndentAll($recursive, $argv)
 {
     $dirname = getcwd();
     $i = 1;
-    if ($recursive) { $i = 2; }
+    if ($recursive) {
+        $i = 2;
+    }
     for (; $i < count($argv); ++$i) {
         echo $argv[$i];
         if (!is_dir($dirname . '/' . $argv[$i])) {
@@ -51,7 +53,6 @@ if ($argv[1] == '-r') {
 if (count($argv) >= 3) {
     phpIndentAll(false, $argv);
 }
-
 
 /*get parameters and content*/
 $options = array();
@@ -182,12 +183,14 @@ function phpCsFix($matches)
         }
     }
     file_put_contents($tempfile_phpCsFix, $matches[1]);
-    if (false !== exec(PATH_TO_PHP_CS_FIXER . " fix $tempfile_phpCsFix --level=all --fixers=-php_closing_tag --quiet > /dev/null")) {
+    if (false !== exec(PATH_TO_PHP_CS_FIXER . " fix $tempfile_phpCsFix --level=symfony --quiet 2>&1 > /dev/null")) {
         $content_fixed = file_get_contents($tempfile_phpCsFix);
         // restore closing PHP tag
+        /*
         if (mb_substr($content_fixed, -4) == " ?>\n") {
             $content_fixed = mb_substr($content_fixed, 0, -4) . "\n?>\n";
         }
+         */
         $content_fixed = rtrim($content_fixed);
     } else {
         $content_fixed = $matches[1];
